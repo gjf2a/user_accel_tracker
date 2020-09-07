@@ -29,29 +29,32 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-const double _accelerometerNoiseThreshold = 0.1;
-
-double filterNoise(double reading) => reading.abs() >= _accelerometerNoiseThreshold
-    ? reading
-    : 0.0;
-
 class _MyHomePageState extends State<MyHomePage> {
   Estimator _estimator = Estimator();
   int _startTime;
+  bool _inMotion = false;
 
   @override
   void initState() {
     super.initState();
     print("Initializing state");
-    _startTime = DateTime.now().millisecondsSinceEpoch;
+    _reset();
     userAccelerometerEvents.listen((event) {
       setState(() {
         print("listening! $event");
-        double timeStamp = (DateTime.now().millisecondsSinceEpoch - _startTime) / 1000.0;
-        _estimator.add(TimeStamped3D(Value3D(filterNoise(event.x), filterNoise(event.y), filterNoise(event.z)), timeStamp));
+        if (_inMotion) {
+          double timeStamp = (DateTime.now().millisecondsSinceEpoch - _startTime) / 1000.0;
+          _estimator.add(TimeStamped3D(Value3D(event.x, event.y, event.z), timeStamp));
+        }
       });
     });
   }
+
+  void _reset() {
+    _estimator.reset();
+    _startTime = DateTime.now().millisecondsSinceEpoch;
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +69,12 @@ class _MyHomePageState extends State<MyHomePage> {
             Text('Position: ${_estimator.position.uiString()}'),
             Text('Velocity: ${_estimator.velocity.uiString()}'),
             Text('Accelerometer: ${_estimator.acceleration.uiString()}'),
-            Text('Readings: ${_estimator.numReadings}')
+            Text('Readings: ${_estimator.numReadings}'),
+            // Put a button here to start/stop recording motion
+            RaisedButton(child: Text(_inMotion ? "Stop" : "Start"), onPressed: () {setState(() {
+              _inMotion = !_inMotion;
+              if (_inMotion) {_reset();}
+            });},),
           ],
         ),
       )

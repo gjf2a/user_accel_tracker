@@ -26,7 +26,7 @@ class Value3D {
 
   String toString() => '($_x,$_y,$_z)';
 
-  String uiString() => '(${_format.format(_x)},${_format.format(_y)},${_format.format(_z)})';
+  String uiString() => '(${_format.format(_x)}, ${_format.format(_y)}, ${_format.format(_z)})';
 }
 
 class TimeStamped3D {
@@ -59,9 +59,14 @@ class TimeStamped3D {
 
 class Estimator {
   TimeStamped3D _position, _velocity, _acceleration, _prevAcceleration;
-  int _numReadings = 0;
+  int _numReadings;
 
   Estimator() {
+    reset();
+  }
+
+  void reset() {
+    _numReadings = 0;
     _position = TimeStamped3D.zeros();
     _velocity = TimeStamped3D.zeros();
     _acceleration = TimeStamped3D.zeros();
@@ -91,4 +96,25 @@ class Estimator {
     }
     _numReadings += 1;
   }
+}
+
+class Averager {
+  Value3D _total = Value3D(0, 0, 0);
+  Value3D _last = Value3D(0, 0, 0);
+  double _count = 0;
+
+  void accumulate(Value3D v) {
+    _last = v;
+    _total += v;
+    _count += 1.0;
+  }
+
+  void reset() {
+    _total = Value3D(0, 0, 0);
+    _count = 0;
+  }
+
+  Value3D get average => _count == 0 ? Value3D(0, 0, 0) : _total / _count;
+
+  Value3D get last => _last;
 }
