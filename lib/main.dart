@@ -1,5 +1,5 @@
+import 'package:accel_data/accel_data.dart';
 import 'package:flutter/material.dart';
-import 'package:user_accel_tracker/tracker.dart';
 import 'package:sensors/sensors.dart';
 
 void main() {
